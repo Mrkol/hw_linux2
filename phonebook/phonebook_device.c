@@ -3,6 +3,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/unistd.h>
+#include <linux/device.h>
 
 #include "phonebook_device.h"
 #include "phonebook_impl.h"
@@ -10,6 +11,8 @@
 #define DEVICE_NAME "phonebook"
 
 static unsigned int major_num;
+static dev_t dev_no;
+static struct class *dev_class;
 static int device_open_count = 0;
 
 static int device_open(struct inode *, struct file *);
@@ -34,11 +37,27 @@ int phonebook_device_init(void) {
 		return major_num;
 	}
 
-	printk(KERN_INFO "Phonebook created with device number %d\n", major_num);
+	dev_no = MKDEV(major_num, 0);
+	dev_class = class_create(THIS_MODULE, "phonebook");
+	if (IS_ERR(dev_class)) {
+		printk(KERN_ALERT "Unable to create device class\n");
+		__unregister_chrdev(major_num, 0, 1, DEVICE_NAME);
+		return -1;
+	}
+
+	if (IS_ERR(device_create(dev_class, NULL, dev_no, NULL, "phonebook"))) {
+		printk(KERN_ALERT "Unable to create device /dev/phonebook");
+		class_destroy(dev_class);
+		__unregister_chrdev(major_num, 0, 1, DEVICE_NAME);
+		return -1;
+	}
+
 	return 0;
 }
 
 void phonebook_device_exit(void) {
+	device_destroy(dev_class, dev_no);
+	class_destroy(dev_class);
 	__unregister_chrdev(major_num, 0, 1, DEVICE_NAME);
 }
 
