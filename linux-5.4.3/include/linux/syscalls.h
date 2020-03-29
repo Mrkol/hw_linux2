@@ -1223,11 +1223,11 @@ asmlinkage long sys_old_mmap(struct mmap_arg_struct __user *arg);
  */
 asmlinkage long sys_ni_syscall(void);
 
-#endif /* CONFIG_ARCH_HAS_SYSCALL_WRAPPER */
-
 asmlinkage long sys_get_user(const char __user *surname, unsigned int len, struct user_data __user *output_data);
 asmlinkage long sys_add_user(struct user_data *input_data);
 asmlinkage long sys_del_user(const char __user *surname, unsigned int len);
+
+#endif /* CONFIG_ARCH_HAS_SYSCALL_WRAPPER */
 
 /*
  * Kernel code should not call syscalls (i.e., sys_xyzyyz()) directly.
