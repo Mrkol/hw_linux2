@@ -1,44 +1,7 @@
+#include <stdio.h>
 #include <linux/phonebook.h>
 #include <linux/unistd.h>
-
-int add_user(const struct user_data* data)
-{
-    int ret;
-    asm volatile
-    (
-        "int $0x80"
-        : "=a" (ret)
-        : "0"(__NR_add_user), "b"(data)
-        : "memory"
-    );
-    return ret;
-}
-
-int get_user(const char* surname, unsigned int surname_len, struct user_data* data)
-{
-    int ret;
-    asm volatile
-    (
-        "int $0x80"
-        : "=a" (ret)
-        : "0"(__NR_get_user), "b"(surname), "c"(surname_len), "d"(data)
-        : "memory"
-    );
-    return ret;
-}
-
-int del_user(const char* surname, unsigned int surname_len)
-{
-    int ret;
-    asm volatile
-    (
-        "int $0x80"
-        : "=a" (ret)
-        : "0"(__NR_del_user), "b"(surname), "c"(surname_len)
-        : "memory"
-    );
-    return ret;
-}
+#include <unistd.h>
 
 int main() {
 	struct user_data data = {
@@ -49,7 +12,8 @@ int main() {
 		.age = 20
 	};
 
-	add_user(&data);
+	printf("adding\n");
+	syscall(__NR_add_user, &data);
 
 	return 0;
 }
